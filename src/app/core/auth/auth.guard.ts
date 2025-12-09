@@ -1,5 +1,5 @@
 import {ActivatedRouteSnapshot, RouterStateSnapshot, Router, CanActivateFn} from '@angular/router';
-import { AuthService } from './auth.service'; // Assurez-vous que le chemin est correct
+import { AuthService } from './auth.service';
 import { take, map, tap } from 'rxjs/operators';
 import {inject} from "@angular/core";
 
