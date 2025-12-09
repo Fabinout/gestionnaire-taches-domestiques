@@ -14,5 +14,4 @@ export class TaskService {
     return collectionData(tasksCollection, { idField: 'id' }) as Observable<Task[]>;
   }
 
-  // Ici, vous ajouterez plus tard : addTask(), updateTask(), etc.
 }
