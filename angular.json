@@ -30,6 +30,17 @@
             "scripts": []
           },
           "configurations": {
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ],
+              "extractLicenses": false,
+              "optimization": false,
+              "sourceMap": true
+            },
             "production": {
               "budgets": [
                 {
@@ -44,11 +55,6 @@
                 }
               ],
               "outputHashing": "all"
-            },
-            "development": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
@@ -91,5 +97,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "19a3ca2e-71bb-42e9-96cc-497c468e4a34"
   }
 }
