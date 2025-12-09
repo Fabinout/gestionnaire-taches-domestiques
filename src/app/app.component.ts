@@ -17,7 +17,7 @@ import { AuthService } from './features/auth/services/auth.service';
           Connecté : {{ (authService.currentUser$ | async)?.email }}
         </div>
       } @else {
-        <p>Mode invité</p>
+        <p>déconnecté</p>
       }
     </header>
 

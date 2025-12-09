@@ -74,8 +74,6 @@ export class AuthService {
   async signOut(): Promise<void> {
     try {
       await signOut(this.auth);
-      // On a supprimé la navigation ici aussi
-      console.log('Déconnexion réussie');
     } catch (error) {
       console.error('Erreur de déconnexion:', error);
       throw error;

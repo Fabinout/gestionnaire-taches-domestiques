@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { AuthService } from '../services/auth.service'; // Ajustez le chemin si nécessaire
-import { Router } from '@angular/router';
+import {Component, NgZone} from '@angular/core';
+import {AuthService} from '../services/auth.service'; // Ajustez le chemin si nécessaire
+import {filter, take} from 'rxjs/operators'; // Import nécessaire
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +13,8 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router // On injecte le Router ici
+    private router: Router,
+    private ngZone: NgZone
   ) { }
 
   /**
@@ -21,7 +23,17 @@ export class LoginComponent {
   async signInWithGoogle(): Promise<void> {
     try {
       await this.authService.googleSignIn();
-      await this.router.navigate(['/home']);
+
+      // On attend que l'état de l'utilisateur soit propagé (non null) avant de naviguer
+      this.authService.user$.pipe(
+        filter(user => !!user), // On filtre pour ne laisser passer que si un utilisateur existe
+        take(1) // On ne prend que la première émission valide pour éviter les fuites de mémoire
+      ).subscribe(() => {
+        this.ngZone.run(() => {
+          this.router.navigate(['/']);
+        });
+      });
+
     } catch (error) {
       //todo Ici on pourrait afficher une notification d'erreur à l'utilisateur
       console.error("Echec de la connexion", error);

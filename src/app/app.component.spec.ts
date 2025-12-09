@@ -38,7 +38,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('p')?.textContent).toContain('Mode invité');
+    expect(compiled.querySelector('p')?.textContent).toContain('déconnecté');
   });
 
   it('should show user email when authenticated', () => {
