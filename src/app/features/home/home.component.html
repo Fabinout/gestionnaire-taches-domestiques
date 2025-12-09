@@ -1,0 +1,25 @@
+<div class="home-container" *ngIf="user$ | async as user; else loading">
+  <header>
+    <h2>🏠 Tableau de Bord - {{ user.displayName || 'Utilisateur' }}</h2>
+    <button (click)="logout()" class="logout-btn">
+      Déconnexion
+    </button>
+  </header>
+
+  <section class="user-info">
+    <img [src]="user.photoURL || 'placeholder.png'" alt="Photo de profil" class="profile-pic">
+    <p>Bienvenue, **{{ user.displayName || user.email }}**.</p>
+    <p>Votre ID de session est : `{{ user.uid }}`</p>
+  </section>
+
+  <hr>
+
+  <main>
+    <h3>Liste des Tâches Partagées (À venir)</h3>
+    <p>Ici, vous afficherez les tâches, les membres de la famille, et les fonctionnalités du gestionnaire.</p>
+  </main>
+</div>
+
+<ng-template #loading>
+  <p>Chargement de la session utilisateur...</p>
+</ng-template>
