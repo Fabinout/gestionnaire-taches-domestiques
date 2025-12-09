@@ -1,10 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AuthService, User } from './auth.service';
-// On importe Auth pour l'injection, et le reste pour mocker les fonctions
-import { Auth, User as FirebaseUser } from '@angular/fire/auth';
+import { Auth, authState, GoogleAuthProvider, signInWithPopup, signOut, User as FirebaseUser } from '@angular/fire/auth';
 import * as AuthLib from '@angular/fire/auth';
-import { of } from 'rxjs';
+import {BehaviorSubject, of, switchMap} from 'rxjs';
 
 // Mock pour l'utilisateur Firebase
 const mockUser: Partial<FirebaseUser> = {
@@ -12,33 +11,46 @@ const mockUser: Partial<FirebaseUser> = {
   email: 'test@example.com',
   displayName: 'Test User',
   photoURL: 'url/photo.jpg',
-  // Méthodes minimales requises pour le typage si nécessaire
   emailVerified: true,
   isAnonymous: false,
 };
+
+jest.mock('@angular/fire/auth', () => ({
+  Auth: class {}, // Mock de la classe Auth
+  authState: jest.fn(),
+  signInWithPopup: jest.fn(),
+  signOut: jest.fn(),
+  GoogleAuthProvider: class {},
+}));
 
 describe('AuthService', () => {
   let service: AuthService;
   let router: Router;
   let authMock: Auth;
+  let authStateSubject: BehaviorSubject<FirebaseUser | null>;
 
-  // Spies pour les fonctions autonomes
-  let signInWithPopupSpy: jasmine.Spy;
-  let signOutSpy: jasmine.Spy;
-  let authStateSpy: jasmine.Spy;
 
   beforeEach(() => {
     // 1. On crée un objet Auth vide (puisque les fonctions font tout le travail)
     authMock = {} as Auth;
 
+    // On utilise un BehaviorSubject pour contrôler l'émission de l'état d'auth
+    authStateSubject = new BehaviorSubject<FirebaseUser | null>(null);
+
     // 2. On espionne les fonctions exportées par @angular/fire/auth
     // Note: authState est appelé dans le constructor, donc on doit le mocker AVANT d'injecter le service
-    authStateSpy = spyOn(AuthLib, 'authState').and.returnValue(of(null));
-    signInWithPopupSpy = spyOn(AuthLib, 'signInWithPopup').and.returnValue(Promise.resolve({ user: mockUser as FirebaseUser } as any));
-    signOutSpy = spyOn(AuthLib, 'signOut').and.returnValue(Promise.resolve());
+    (authState as jest.Mock).mockReturnValue(authStateSubject);
+
+    // On implémente le mock pour qu'il mette à jour le subject lors d'une connexion réussie
+    (signInWithPopup as jest.Mock).mockImplementation(() => {
+      authStateSubject.next(mockUser as FirebaseUser);
+      return Promise.resolve({ user: mockUser as FirebaseUser });
+    });
+
+    (signOut as jest.Mock).mockResolvedValue(undefined);
 
     // 3. Mock du Router
-    const routerSpy = { navigate: jasmine.createSpy('navigate') };
+    const routerSpy = { navigate: jest.fn() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -52,6 +64,10 @@ describe('AuthService', () => {
     // Le constructeur de AuthService est appelé ici, donc authStateSpy doit être prêt
     service = TestBed.inject(AuthService);
     router = TestBed.inject(Router);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('devrait être créé', () => {
@@ -73,9 +89,16 @@ describe('AuthService', () => {
       // Ici, comme le service est un singleton déjà créé dans beforeEach, user$ est déjà initialisé.
       // On ne peut pas "changer" le passé du constructeur facilement sans recréer le service.
 
-      // Solution : On recrée le service pour ce test spécifique avec un nouveau mock
-      authStateSpy.and.returnValue(of(mockUser as FirebaseUser));
-      service = TestBed.inject(AuthService); // Récupère l'instance (déjà créée)
+      (authState as jest.Mock).mockReturnValue(of(mockUser as FirebaseUser));
+
+      // On réinitialise user$ manuellement pour le test en rappelant la logique
+      // authState fait maintenant référence à notre mock
+      service.user$ = authState(authMock).pipe(
+        switchMap((user: any) => {
+          if (user) return of({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });
+          return of(null);
+        })
+      );
 
       // Astuce: Pour tester le flux, il vaut mieux le faire en injectant un Subject si on veut changer la valeur dynamiquement,
       // mais ici on va simplement relancer la logique du constructeur en "écrasant" la propriété user$ pour le test
@@ -84,7 +107,6 @@ describe('AuthService', () => {
 
       // On réinitialise user$ manuellement pour le test en rappelant la logique (car authStateSpy a changé)
       // Note: Dans un vrai test unitaire rigoureux, on utiliserait un BehaviorSubject pour le mock de authState.
-      const { switchMap } = require('rxjs/operators'); // Import dynamique juste pour la logique
 
       // On écrase user$ avec la nouvelle valeur simulée du spy
       service.user$ = AuthLib.authState(authMock).pipe(
@@ -110,9 +132,9 @@ describe('AuthService', () => {
     it('devrait appeler signInWithPopup et naviguer vers /home en cas de succès', async () => {
       await service.googleSignIn();
 
-      expect(signInWithPopupSpy).toHaveBeenCalled();
+      expect(signInWithPopup).toHaveBeenCalled();
       // On peut vérifier qu'il a été appelé avec notre instance authMock
-      expect(signInWithPopupSpy).toHaveBeenCalledWith(authMock, jasmine.any(Object));
+      expect(signInWithPopup).toHaveBeenCalledWith(authMock, expect.any(Object));
 
       // Vérifie que la navigation a eu lieu
       expect(router.navigate).toHaveBeenCalledWith(['/home']);
@@ -120,12 +142,12 @@ describe('AuthService', () => {
 
     it('devrait gérer l\'erreur de signInWithPopup', async () => {
       // Configure le mock pour qu'il rejette une promesse
-      signInWithPopupSpy.and.returnValue(Promise.reject('Test Error'));
-      spyOn(console, 'error');
+      (signInWithPopup as jest.Mock).mockRejectedValue('Test Error');
+      jest.spyOn(console, 'error').mockImplementation(() => {});
 
       await service.googleSignIn();
 
-      expect(signInWithPopupSpy).toHaveBeenCalled();
+      expect(signInWithPopup).toHaveBeenCalled();
       expect(console.error).toHaveBeenCalledWith('Erreur de connexion Google:', 'Test Error');
       // La navigation ne devrait PAS être appelée en cas d'échec
       expect(router.navigate).not.toHaveBeenCalled();
@@ -136,18 +158,18 @@ describe('AuthService', () => {
     it('devrait appeler signOut et naviguer vers /login', async () => {
       await service.signOut();
 
-      expect(signOutSpy).toHaveBeenCalled();
-      expect(signOutSpy).toHaveBeenCalledWith(authMock);
+      expect(signOut).toHaveBeenCalled();
+      expect(signOut).toHaveBeenCalledWith(authMock);
       expect(router.navigate).toHaveBeenCalledWith(['/login']);
     });
 
     it('devrait gérer l\'erreur de signOut', async () => {
-      signOutSpy.and.returnValue(Promise.reject('SignOut Error'));
-      spyOn(console, 'error');
+      (signOut as jest.Mock).mockRejectedValue('SignOut Error');
+      jest.spyOn(console, 'error').mockImplementation(() => {});
 
       await service.signOut();
 
-      expect(signOutSpy).toHaveBeenCalled();
+      expect(signOut).toHaveBeenCalled();
       expect(console.error).toHaveBeenCalledWith('Erreur de déconnexion:', 'SignOut Error');
     });
   });
