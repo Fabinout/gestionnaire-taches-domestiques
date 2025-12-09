@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../core/auth/auth.service'; // Ajustez le chemin si nécessaire
+import { AuthService } from '../services/auth.service'; // Ajustez le chemin si nécessaire
 
 @Component({
   selector: 'app-login',
@@ -15,7 +15,6 @@ export class LoginComponent {
    * Déclenche la connexion Google via le service d'authentification.
    */
   async signInWithGoogle(): Promise<void> {
-    console.log("Tentative de connexion Google...");
     await this.authService.googleSignIn();
   }
 }

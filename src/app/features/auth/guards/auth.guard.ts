@@ -1,5 +1,5 @@
 import {ActivatedRouteSnapshot, RouterStateSnapshot, Router, CanActivateFn} from '@angular/router';
-import { AuthService } from './auth.service';
+import { AuthService } from '../services/auth.service';
 import { take, map, tap } from 'rxjs/operators';
 import {inject} from "@angular/core";
 
@@ -15,7 +15,6 @@ export const authGuard: CanActivateFn = (
     map(user => !!user),
     tap(loggedIn => {
       if (!loggedIn) {
-        console.log('Accès refusé. Redirection vers /login.');
         router.navigate(['/login']);
       }
     })

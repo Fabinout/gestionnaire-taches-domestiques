@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { AuthService } from './core/auth/auth.service';
+import { AuthService } from './features/auth/services/auth.service';
 import { of } from 'rxjs';
 
 describe('AppComponent', () => {

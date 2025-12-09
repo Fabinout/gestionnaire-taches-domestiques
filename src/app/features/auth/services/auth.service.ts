@@ -68,7 +68,6 @@ export class AuthService {
         });
       });
 
-      console.log('Connexion Google réussie');
     } catch (error) {
       console.error('Erreur de connexion Google:', error);
     }
@@ -80,11 +79,9 @@ export class AuthService {
   async signOut(): Promise<void> {
     try {
       await signOut(this.auth);
-      // Navigation dans la zone Angular
       this.ngZone.run(() => {
         this.router.navigate(['/login']);
       });
-      console.log('Déconnexion réussie');
     } catch (error) {
       console.error('Erreur de déconnexion:', error);
     }
