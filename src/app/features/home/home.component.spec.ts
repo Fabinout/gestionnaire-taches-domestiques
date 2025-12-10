@@ -6,11 +6,24 @@ import {Observable, of} from 'rxjs';
 import {By} from '@angular/platform-browser';
 import {Task} from '../tasks/models/task.model';
 
+const mockTasks: Task[] = [
+  {id: '1', name: 'Vaisselle', completed: false, createdAt: '2023-01-01'},
+  {id: '2', name: 'Lessive', completed: true, createdAt: '2023-01-02'}
+];
+
+const mockUser: User = {
+  uid: '123',
+  email: 'test@test.com',
+  displayName: 'Test User',
+  photoURL: 'https://link.to.profile_picture.jpg'
+};
+
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
-  let authServiceSpy: Partial<AuthService>;
-  let taskServiceSpy: Partial<TaskService>;
+  let authServiceSpy: { signOut: jest.Mock; user$: Observable<User | null> };
+  let taskServiceSpy: { getAllTasks: jest.Mock; updateTaskStatus: jest.Mock };
+
   beforeEach(async () => {
     authServiceSpy = {
       signOut: jest.fn().mockResolvedValue(undefined),
@@ -28,88 +41,60 @@ describe('HomeComponent', () => {
         {provide: AuthService, useValue: authServiceSpy},
         {provide: TaskService, useValue: taskServiceSpy}
       ]
-    })
-      .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+
+  it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize user$ and tasks$', () => {
+  it('should initialize user$ and tasks$ as defined Observables', () => {
     expect(component.user$).toBeDefined();
     expect(component.tasks$).toBeDefined();
   });
 
-  it('should call signOut when logout is called', async () => {
+  it('should call AuthService.signOut when logout is called', async () => {
     await component.logout();
-    expect(authServiceSpy.signOut).toHaveBeenCalled();
-  });
-});
-
-describe('HomeComponent Integration', () => {
-  let fixture: ComponentFixture<HomeComponent>;
-  let taskServiceSpy: { getAllTasks: jest.Mock; addTask: jest.Mock; updateTaskStatus: jest.Mock };
-  let authServiceSpy: { signOut: jest.Mock; user$: Observable<User> };
-
-  const mockTasks: Task[] = [
-    {id: '1', name: 'Vaisselle', completed: false, createdAt: '2023-01-01'},
-    {id: '2', name: 'Lessive', completed: true, createdAt: '2023-01-02'}
-  ];
-
-  beforeEach(async () => {
-    taskServiceSpy = {
-      getAllTasks: jest.fn(),
-      addTask: jest.fn(),
-      updateTaskStatus: jest.fn()
-    };
-
-    authServiceSpy = {
-      signOut: jest.fn(),
-      user$: of({uid: '123', email: 'test@test.com', displayName: 'Test User', photoURL: ('https://link.to.profile_picture.jpg')} as User)
-    };
-
-    taskServiceSpy.getAllTasks.mockReturnValue(of(mockTasks));
-    taskServiceSpy.updateTaskStatus.mockResolvedValue(undefined);
-
-    await TestBed.configureTestingModule({
-      imports: [HomeComponent],
-      providers: [
-        {provide: TaskService, useValue: taskServiceSpy},
-        {provide: AuthService, useValue: authServiceSpy}
-      ]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(HomeComponent);
-
-    fixture.detectChanges();
+    expect(authServiceSpy.signOut).toHaveBeenCalledTimes(1);
   });
 
-  it('devrait afficher la liste des tâches', () => {
-    fixture.detectChanges();
 
-    const taskElements = fixture.debugElement.queryAll(By.css('li'));
-    expect(taskElements.length).toBe(2);
-    expect(taskElements[0].nativeElement.textContent).toContain('Vaisselle');
+  describe('when a user is logged in (Integration Tests)', () => {
+    beforeEach(() => {
+      authServiceSpy.user$ = of(mockUser);
+      taskServiceSpy.getAllTasks.mockReturnValue(of(mockTasks));
+
+      fixture = TestBed.createComponent(HomeComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('should display the list of tasks returned by the service', () => {
+      const taskElements = fixture.debugElement.queryAll(By.css('li'));
+
+      expect(taskElements.length).toBe(mockTasks.length); // 2
+      expect(taskElements[0].nativeElement.textContent).toContain('Vaisselle');
+      expect(taskElements[1].nativeElement.textContent).toContain('Lessive');
+    });
+
+    it('should call updateTaskStatus and update the UI when the first task checkbox is clicked', fakeAsync(() => {
+      const firstTaskCheckbox = fixture.debugElement
+        .queryAll(By.css('input[type="checkbox"]'))[0].nativeElement;
+
+      expect(firstTaskCheckbox.checked).toBeFalsy();
+
+      firstTaskCheckbox.click();
+
+      tick();
+
+      fixture.detectChanges();
+
+      expect(taskServiceSpy.updateTaskStatus).toHaveBeenCalledWith('1', true);
+    }));
   });
-
-  it('devrait appeler updateTaskStatus et mettre à jour l UI quand on clique sur la checkbox', fakeAsync(() => {
-    fixture.detectChanges();
-
-    const firstTaskCheckbox = fixture.debugElement.query(By.css('input[type="checkbox"]')).nativeElement;
-
-    expect(firstTaskCheckbox.checked).toBeFalsy();
-
-    firstTaskCheckbox.click();
-    firstTaskCheckbox.dispatchEvent(new Event('change'));
-
-    tick();
-    fixture.detectChanges();
-
-    expect(taskServiceSpy.updateTaskStatus).toHaveBeenCalledWith('1', true);
-  }));
 });
