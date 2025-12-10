@@ -4,7 +4,7 @@ import { AuthService } from './features/auth/services/auth.service';
 import { of } from 'rxjs';
 
 describe('AppComponent', () => {
-  let authServiceSpy: any;
+  let authServiceSpy: Partial<AuthService>;
 
   beforeEach(async () => {
     // Création du mock avec des propriétés initiales

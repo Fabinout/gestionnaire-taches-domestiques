@@ -2,7 +2,7 @@ import {Injectable, inject, NgZone} from '@angular/core';
 import {Router} from '@angular/router';
 import {Auth, authState, signInWithPopup, GoogleAuthProvider, signOut, User as FirebaseUser} from '@angular/fire/auth';
 import {Observable, of} from 'rxjs';
-import {switchMap, map, shareReplay, filter, take} from 'rxjs/operators';
+import {switchMap, map, shareReplay} from 'rxjs/operators';
 
 export interface User {
   uid: string;

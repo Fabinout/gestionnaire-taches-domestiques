@@ -14,13 +14,12 @@ jest.mock('@angular/fire/firestore', () => {
 
 describe('TaskService', () => {
   let service: TaskService;
-  let firestoreMock: any;
+  let firestoreMock: Partial<Firestore>;
 
   beforeEach(() => {
-    firestoreMock = {}; // Mock de l'instance Firestore
+    firestoreMock = {};
 
-    // Mock des fonctions standalone de Firestore
-    (collection as jest.Mock).mockReturnValue({} as any);
+    (collection as jest.Mock).mockReturnValue({} as never);
     (collectionData as jest.Mock).mockReturnValue(of([]));
 
     TestBed.configureTestingModule({

@@ -88,7 +88,7 @@ describe('AuthService', () => {
     it('devrait propager l\'erreur si la connexion échoue', async () => {
       const errorMsg = 'Popup closed by user';
       (signInWithPopup as jest.Mock).mockRejectedValue(errorMsg);
-      jest.spyOn(console, 'error').mockImplementation(() => {}); // Silence console.error
+      jest.spyOn(console, 'error').mockImplementation(() => { /* empty */ });
 
       await expect(service.googleSignIn()).rejects.toEqual(errorMsg);
     });

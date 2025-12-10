@@ -56,7 +56,7 @@ describe('LoginComponent', () => {
       // Arrange
       const error = new Error('Google Auth Failed');
       authServiceSpy.googleSignIn.mockRejectedValue(error);
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { /* empty */ });
 
       // Act
       await component.signInWithGoogle();

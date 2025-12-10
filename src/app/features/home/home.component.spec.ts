@@ -8,8 +8,8 @@ import {of} from 'rxjs';
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
-  let authServiceSpy: any;
-  let taskServiceSpy: any;
+  let authServiceSpy: Partial<AuthService>;
+  let taskServiceSpy: Partial<TaskService>;
 
   beforeEach(async () => {
     // Mock AuthService
