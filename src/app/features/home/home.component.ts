@@ -1,4 +1,4 @@
-import { Component, NgZone, inject } from '@angular/core';
+import {Component, NgZone, inject} from '@angular/core';
 import {AuthService, User} from '../auth/services/auth.service'; // Ajustez le chemin si nécessaire
 import {Observable} from 'rxjs';
 import {CommonModule} from '@angular/common';
@@ -52,11 +52,17 @@ export class HomeComponent {
   toggleTaskStatus(task: Task): void {
     if (!task.id) return;
 
-    const newStatus = !task.completed;
-
-    this.taskService.updateTaskStatus(task.id, newStatus).catch(err => {
-      console.error('Erreur lors de la mise à jour de la tâche', err);
-    });
+    if (task.completed) {
+      this.taskService.cancelCompletion(task.id).catch(err => console.error(err));
+    } else {
+      this.user$.pipe(take(1)).subscribe(user => {
+        if (user && task.id) {
+          this.taskService.completeTask(task.id, user.uid).catch(err => {
+            console.error('Erreur lors de la mise à jour de la tâche', err);
+          });
+        }
+      });
+    }
   }
 
   async logout(): Promise<void> {

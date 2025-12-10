@@ -22,7 +22,7 @@ describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
   let authServiceSpy: { signOut: jest.Mock; user$: Observable<User | null> };
-  let taskServiceSpy: { getAllTasks: jest.Mock; updateTaskStatus: jest.Mock };
+  let taskServiceSpy: { getAllTasks: jest.Mock; completeTask: jest.Mock };
 
   beforeEach(async () => {
     authServiceSpy = {
@@ -32,7 +32,7 @@ describe('HomeComponent', () => {
 
     taskServiceSpy = {
       getAllTasks: jest.fn().mockReturnValue(of([])),
-      updateTaskStatus: jest.fn().mockResolvedValue(undefined),
+      completeTask: jest.fn().mockResolvedValue(undefined),
     }
 
     await TestBed.configureTestingModule({
@@ -82,7 +82,7 @@ describe('HomeComponent', () => {
       expect(taskElements[1].nativeElement.textContent).toContain('Lessive');
     });
 
-    it('should call updateTaskStatus and update the UI when the first task checkbox is clicked', fakeAsync(() => {
+    it('should call completeTask and update the UI when the first task checkbox is clicked', fakeAsync(() => {
       const firstTaskCheckbox = fixture.debugElement
         .queryAll(By.css('input[type="checkbox"]'))[0].nativeElement;
 
@@ -94,7 +94,7 @@ describe('HomeComponent', () => {
 
       fixture.detectChanges();
 
-      expect(taskServiceSpy.updateTaskStatus).toHaveBeenCalledWith('1', true);
+      expect(taskServiceSpy.completeTask).toHaveBeenCalledWith('1', "123");
     }));
   });
 });

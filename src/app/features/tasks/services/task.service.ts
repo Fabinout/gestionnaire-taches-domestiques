@@ -27,8 +27,13 @@ export class TaskService {
     return addDoc(tasksCollection, task);
   }
 
-  updateTaskStatus(taskId: string, completed: boolean): Promise<void> {
+  completeTask(taskId: string, completedBy: string): Promise<void> {
     const taskDocRef = doc(this.firestore, `taches/${taskId}`);
-    return updateDoc(taskDocRef, { completed });
+    return updateDoc(taskDocRef, { completed: true , completedBy: completedBy});
+  }
+
+  cancelCompletion(taskId: string) {
+    const taskDocRef = doc(this.firestore, `taches/${taskId}`);
+    return updateDoc(taskDocRef, { completed: false , completedBy: null});
   }
 }

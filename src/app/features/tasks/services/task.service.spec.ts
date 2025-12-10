@@ -1,6 +1,6 @@
 import {TestBed} from '@angular/core/testing';
 import {TaskService} from './task.service';
-import {Firestore, collection, collectionData, addDoc} from '@angular/fire/firestore';
+import {Firestore, collection, collectionData, addDoc, updateDoc, doc} from '@angular/fire/firestore';
 import {firstValueFrom, of} from 'rxjs';
 import {Task} from '../models/task.model';
 
@@ -12,7 +12,8 @@ jest.mock('@angular/fire/firestore', () => {
     collection: jest.fn(),
     collectionData: jest.fn(),
     addDoc: jest.fn(),
-  };
+    doc: jest.fn(),
+    updateDoc: jest.fn(),  };
 });
 
 describe('TaskService', () => {
@@ -25,6 +26,8 @@ describe('TaskService', () => {
     (collection as jest.Mock).mockReturnValue({} as never);
     (collectionData as jest.Mock).mockReturnValue(of([]));
     (addDoc as jest.Mock).mockResolvedValue({id: 'new-id'});
+    (doc as jest.Mock).mockReturnValue({});
+    (updateDoc as jest.Mock).mockResolvedValue(undefined);
 
     TestBed.configureTestingModule({
       providers: [
@@ -57,5 +60,24 @@ describe('TaskService', () => {
 
     expect(collection).toHaveBeenCalledWith(firestoreMock, 'taches');
     expect(addDoc).toHaveBeenCalledWith(expect.anything(), newTask);
+  });
+
+  it('should complete a task', async () => {
+    const taskId = 'task-123';
+    const completedBy = 'user-abc';
+
+    await service.completeTask(taskId, completedBy);
+
+    expect(doc).toHaveBeenCalledWith(firestoreMock, `taches/${taskId}`);
+    expect(updateDoc).toHaveBeenCalledWith(expect.anything(), { completed: true, completedBy: completedBy });
+  });
+
+  it('should cancel task completion', async () => {
+    const taskId = 'task-123';
+
+    await service.cancelCompletion(taskId);
+
+    expect(doc).toHaveBeenCalledWith(firestoreMock, `taches/${taskId}`);
+    expect(updateDoc).toHaveBeenCalledWith(expect.anything(), { completed: false, completedBy: null });
   });
 });
