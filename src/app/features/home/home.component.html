@@ -17,6 +17,16 @@
     <main>
       <h3>Liste des Tâches Partagées</h3>
 
+      <div class="add-task-container">
+        <input
+          type="text"
+          [(ngModel)]="newName"
+          placeholder="Nouvelle tâche domestique..."
+          (keyup.enter)="addTask()"
+        />
+        <button (click)="addTask()">Ajouter</button>
+      </div>
+
       @if (tasks$ | async; as tasks) {
         <div>
           @if (tasks.length > 0) {
