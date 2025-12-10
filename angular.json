@@ -76,11 +76,23 @@
           "options": {
             "buildTarget": "gestionnaire-taches-domestiques:build"
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     }
   },
   "cli": {
-    "analytics": "19a3ca2e-71bb-42e9-96cc-497c468e4a34"
+    "analytics": "19a3ca2e-71bb-42e9-96cc-497c468e4a34",
+    "schematicCollections": [
+      "angular-eslint"
+    ]
   }
 }
