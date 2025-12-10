@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { TaskService } from './task.service';
 import { Firestore, collection, collectionData } from '@angular/fire/firestore';
-import { of } from 'rxjs';
+import {firstValueFrom, of} from 'rxjs';
 
 jest.mock('@angular/fire/firestore', () => {
   const originalModule = jest.requireActual('@angular/fire/firestore');
@@ -35,12 +35,10 @@ describe('TaskService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should return tasks observable', (done) => {
-    service.getAllTasks().subscribe(tasks => {
-      expect(tasks).toEqual([]);
-      expect(collection).toHaveBeenCalledWith(firestoreMock, 'taches');
-      expect(collectionData).toHaveBeenCalled();
-      done();
-    });
+  it('should return tasks observable', async () => {
+    const tasks = await firstValueFrom(service.getAllTasks());
+    expect(tasks).toEqual([]);
+    expect(collection).toHaveBeenCalledWith(firestoreMock, 'taches');
+    expect(collectionData).toHaveBeenCalled();
   });
 });
