@@ -32,16 +32,23 @@
           @if (tasks.length > 0) {
             <ul>
               @for (task of tasks; track task.id) {
-                <li>
-                  <input type="checkbox" [checked]="task.completed" disabled />
-                  {{ task.name }}
+                <li [class.completed]="task.completed">
+                  <input
+                    type="checkbox"
+                    [checked]="task.completed"
+                    (change)="toggleTaskStatus(task)"
+                    [id]="'task-' + task.id"
+                  >
+                  <label [for]="'task-' + task.id">{{ task.name }}</label>
+                  @if (task.completed) {
+                    <span>(Fini)</span>
+                  }
                 </li>
               }
             </ul>
           } @else {
             <p>Aucune tâche pour le moment.</p>
-          }
-        </div>
+          }        </div>
       } @else {
         <p>Chargement des tâches...</p>
       }

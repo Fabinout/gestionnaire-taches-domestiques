@@ -49,6 +49,15 @@ export class HomeComponent {
     });
   }
 
+  toggleTaskStatus(task: Task): void {
+    if (!task.id) return;
+
+    const newStatus = !task.completed;
+
+    this.taskService.updateTaskStatus(task.id, newStatus).catch(err => {
+      console.error('Erreur lors de la mise à jour de la tâche', err);
+    });
+  }
 
   async logout(): Promise<void> {
     await this.authService.signOut();
