@@ -1,4 +1,4 @@
-import {Component, NgZone} from '@angular/core';
+import { Component, NgZone, inject } from '@angular/core';
 import {AuthService, User} from '../auth/services/auth.service'; // Ajustez le chemin si nécessaire
 import {Observable} from 'rxjs';
 import {CommonModule} from '@angular/common';
@@ -16,14 +16,15 @@ import {filter, take} from "rxjs/operators";
 })
 
 export class HomeComponent {
+  private authService = inject(AuthService);
+  private taskService = inject(TaskService);
+  private router = inject(Router);
+  private ngZone = inject(NgZone);
+
   user$: Observable<User | null>;
   tasks$: Observable<Task[]>;
 
-  constructor(private authService: AuthService,
-              private taskService: TaskService,
-              private router: Router,
-              private ngZone: NgZone
-  ) {
+  constructor() {
     this.user$ = this.authService.user$;
     this.tasks$ = this.taskService.getAllTasks();
   }

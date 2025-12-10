@@ -1,4 +1,4 @@
-import {Component, NgZone} from '@angular/core';
+import { Component, NgZone, inject } from '@angular/core';
 import {AuthService} from '../services/auth.service'; // Ajustez le chemin si nécessaire
 import {filter, take} from 'rxjs/operators'; // Import nécessaire
 import {Router} from '@angular/router';
@@ -10,12 +10,9 @@ import {Router} from '@angular/router';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private ngZone: NgZone
-  ) { }
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private ngZone = inject(NgZone);
 
   /**
    * Déclenche la connexion Google via le service d'authentification.

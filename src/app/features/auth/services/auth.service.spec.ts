@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { AuthService, User } from './auth.service';
 import { Auth, authState, GoogleAuthProvider, signInWithPopup, signOut, User as FirebaseUser } from '@angular/fire/auth';
-import { BehaviorSubject } from 'rxjs';
+import {BehaviorSubject, firstValueFrom} from 'rxjs';
 
 // Mock simple de l'utilisateur Firebase
 const mockFirebaseUser: Partial<FirebaseUser> = {
@@ -53,26 +53,22 @@ describe('AuthService', () => {
   });
 
   describe('user$', () => {
-    it('devrait émettre null par défaut (déconnecté)', (done) => {
-      service.user$.subscribe(user => {
-        expect(user).toBeNull();
-        done();
-      });
+    it('devrait émettre null par défaut (déconnecté)', async () => {
+      const user = await firstValueFrom(service.user$);
+      expect(user).toBeNull();
     });
 
-    it('devrait mapper et émettre un User quand Firebase émet un utilisateur', (done) => {
+    it('devrait mapper et émettre un User quand Firebase émet un utilisateur', async () => {
       // On simule une connexion via le Subject
       authStateSubject.next(mockFirebaseUser as FirebaseUser);
 
-      service.user$.subscribe(user => {
-        expect(user).toEqual({
-          uid: 'test-uid',
-          email: 'test@example.com',
-          displayName: 'Test User',
-          photoURL: 'url/photo.jpg',
-        } as User);
-        done();
-      });
+      const user = await firstValueFrom(service.user$);
+      expect(user).toEqual({
+        uid: 'test-uid',
+        email: 'test@example.com',
+        displayName: 'Test User',
+        photoURL: 'url/photo.jpg',
+      } as User);
     });
   });
 
