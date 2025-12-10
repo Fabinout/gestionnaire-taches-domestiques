@@ -1,40 +1,42 @@
-<div class="home-container" *ngIf="user$ | async as user; else loading">
-  <header>
-    <h2>Tableau de Bord - {{ user.displayName || 'Utilisateur' }}</h2>
-    <button (click)="logout()" class="logout-btn">
-      Déconnexion
-    </button>
-  </header>
+@if (user$ | async; as user) {
+  <div class="home-container">
+    <header>
+      <h2>Tableau de Bord - {{ user.displayName || 'Utilisateur' }}</h2>
+      <button (click)="logout()" class="logout-btn">
+        Déconnexion
+      </button>
+    </header>
 
-  <section class="user-info">
-    <img [src]="user.photoURL || 'placeholder.png'" alt="Photo de profil" class="profile-pic">
-    <p>Bienvenue, **{{ user.displayName || user.email }}**.</p>
-    <p>Votre ID de session est : `{{ user.uid }}`</p>
-  </section>
+    <section class="user-info">
+      <img [src]="user.photoURL || 'placeholder.png'" alt="Photo de profil" class="profile-pic">
+      <p>Bienvenue, **{{ user.displayName || user.email }}**.</p>
+      <p>Votre ID de session est : `{{ user.uid }}`</p>
+    </section>
 
-  <hr>
-  <main>
-    <h3>Liste des Tâches Partagées</h3>
+    <hr>
+    <main>
+      <h3>Liste des Tâches Partagées</h3>
 
-    <div *ngIf="tasks$ | async as tasks; else loadingTasks">
-      <ul *ngIf="tasks.length > 0; else noTasks">
-        <li *ngFor="let task of tasks">
-          <input type="checkbox" [checked]="task.completed" disabled />
-          {{ task.name }}
-        </li>
-      </ul>
-    </div>
-
-    <ng-template #noTasks>
-      <p>Aucune tâche pour le moment.</p>
-    </ng-template>
-
-    <ng-template #loadingTasks>
-      <p>Chargement des tâches...</p>
-    </ng-template>
-  </main>
-</div>
-
-<ng-template #loading>
+      @if (tasks$ | async; as tasks) {
+        <div>
+          @if (tasks.length > 0) {
+            <ul>
+              @for (task of tasks; track task.id) {
+                <li>
+                  <input type="checkbox" [checked]="task.completed" disabled />
+                  {{ task.name }}
+                </li>
+              }
+            </ul>
+          } @else {
+            <p>Aucune tâche pour le moment.</p>
+          }
+        </div>
+      } @else {
+        <p>Chargement des tâches...</p>
+      }
+    </main>
+  </div>
+} @else {
   <p>Chargement de la session utilisateur...</p>
-</ng-template>
+}
