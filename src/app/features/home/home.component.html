@@ -41,7 +41,7 @@
                   >
                   <label [for]="'task-' + task.id">{{ task.name }}</label>
                   @if (task.completed) {
-                    <span>(Fini)</span>
+                    <span><i>(Fini)</i></span>
                   }
                 </li>
               }
